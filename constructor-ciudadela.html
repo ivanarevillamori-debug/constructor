@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raíces del Perú · Constructor de Ciudadela</title>
+<style>
+  :root{
+    --noche: #1B2A41;
+    --oro: #D4A017;
+    --barro: #B5482C;
+    --verde: #5C7A5C;
+    --arena: #EFE6D8;
+    --azul: #4A7A9C;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background: var(--noche);
+    background-image:
+      radial-gradient(circle at 15% 15%, rgba(212,160,23,0.08), transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(181,72,44,0.10), transparent 45%);
+    color: var(--arena);
+    font-family:'Georgia','Iowan Old Style',serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+
+  .contenedor{
+    width:100%;
+    max-width: 720px;
+    background: linear-gradient(180deg,#22334C,#1B2A41);
+    border-radius:18px;
+    border:1px solid rgba(212,160,23,0.25);
+    box-shadow:0 20px 60px rgba(0,0,0,0.45);
+    overflow:hidden;
+  }
+
+  header{
+    padding:26px 32px 16px;
+    text-align:center;
+    border-bottom:1px solid rgba(212,160,23,0.2);
+  }
+  .eyebrow{
+    font-family:'Trebuchet MS',sans-serif;
+    letter-spacing:3px;
+    font-size:11px;
+    text-transform:uppercase;
+    color:var(--oro);
+    opacity:.85;
+  }
+  h1{ font-size:26px; margin-top:6px; }
+  .sub{
+    font-family:'Trebuchet MS',sans-serif;
+    font-size:13px;
+    color:#B7AD98;
+    margin-top:8px;
+  }
+
+  .franja{ height:6px; display:flex; }
+  .franja span{ flex:1; }
+  .franja .c{ background:var(--barro); }
+  .franja .s{ background:var(--oro); }
+  .franja .sel{ background:var(--verde); }
+
+  main{ padding:28px 32px 32px; }
+
+  /* --- estadísticas --- */
+  .stats{
+    display:grid;
+    grid-template-columns: repeat(4,1fr);
+    gap:10px;
+    margin-bottom:26px;
+  }
+  .stat{
+    background: rgba(255,255,255,0.04);
+    border-radius:10px;
+    padding:10px 8px;
+    text-align:center;
+  }
+  .stat .icono{ font-size:18px; }
+  .stat .nombre{
+    font-family:'Trebuchet MS',sans-serif;
+    font-size:9.5px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    color:#B7AD98;
+    margin:4px 0 6px;
+  }
+  .stat .barra{
+    height:6px;
+    background: rgba(255,255,255,0.08);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .stat .barra div{
+    height:100%;
+    transition: width .5s ease;
+  }
+  .stat[data-k="agua"] .barra div{ background: var(--azul); }
+  .stat[data-k="recursos"] .barra div{ background: var(--verde); }
+  .stat[data-k="defensa"] .barra div{ background: var(--barro); }
+  .stat[data-k="prestigio"] .barra div{ background: var(--oro); }
+
+  .estado-progreso{
+    font-family:'Trebuchet MS',sans-serif;
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color: var(--oro);
+    margin-bottom:8px;
+  }
+
+  h2.paso-titulo{ font-size:21px; margin-bottom:6px; }
+  .paso-desc{
+    font-family:'Trebuchet MS',sans-serif;
+    font-size:13.5px;
+    color:#D9CFBB;
+    line-height:1.5;
+    margin-bottom:20px;
+  }
+
+  .opciones-decision{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .opcion-decision{
+    text-align:left;
+    font-family:'Trebuchet MS',sans-serif;
+    padding:14px 16px;
+    border-radius:10px;
+    border:1.5px solid rgba(212,160,23,0.3);
+    background: rgba(255,255,255,0.03);
+    color: var(--arena);
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .opcion-decision:hover{
+    border-color: var(--oro);
+    background: rgba(212,160,23,0.1);
+    transform: translateX(2px);
+  }
+  .opcion-decision .titulo-op{
+    font-weight:700;
+    font-size:14.5px;
+    margin-bottom:4px;
+  }
+  .opcion-decision .desc-op{
+    font-size:12.5px;
+    color:#B7AD98;
+    line-height:1.4;
+  }
+
+  /* --- pantalla final --- */
+  #final{ display:none; text-align:center; }
+  #final .medalla{ font-size:48px; margin-bottom:6px; }
+  #final h2{ font-size:23px; margin-bottom:10px; }
+  #final .narrativa{
+    font-family:'Trebuchet MS',sans-serif;
+    font-size:14px;
+    color:#D9CFBB;
+    line-height:1.6;
+    text-align:left;
+    background: rgba(255,255,255,0.04);
+    border-left:4px solid var(--oro);
+    border-radius:8px;
+    padding:16px 18px;
+    margin: 18px 0 22px;
+  }
+  #reiniciar{
+    width:100%;
+    font-family:'Trebuchet MS',sans-serif;
+    font-weight:700;
+    padding:14px;
+    border-radius:10px;
+    border:2px solid var(--oro);
+    background:transparent;
+    color:var(--oro);
+    cursor:pointer;
+  }
+  #reiniciar:hover{ background:var(--oro); color:var(--noche); }
+
+  @media (max-width:520px){
+    main{ padding:22px 18px 26px; }
+    header{ padding:22px 20px 16px; }
+    h1{ font-size:21px; }
+    .stats{ grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="contenedor">
+  <header>
+    <div class="eyebrow">Raíces del Perú</div>
+    <h1>Constructor de Ciudadela</h1>
+    <div class="sub">Toma las decisiones de un gobernante andino y descubre qué ciudadela construyes</div>
+  </header>
+  <div class="franja"><span class="c"></span><span class="s"></span><span class="sel"></span></div>
+
+  <main>
+    <div id="juego">
+      <div class="stats">
+        <div class="stat" data-k="agua">
+          <div class="icono">💧</div>
+          <div class="nombre">Agua</div>
+          <div class="barra"><div id="barra-agua" style="width:40%"></div></div>
+        </div>
+        <div class="stat" data-k="recursos">
+          <div class="icono">🌾</div>
+          <div class="nombre">Recursos</div>
+          <div class="barra"><div id="barra-recursos" style="width:40%"></div></div>
+        </div>
+        <div class="stat" data-k="defensa">
+          <div class="icono">🛡️</div>
+          <div class="nombre">Defensa</div>
+          <div class="barra"><div id="barra-defensa" style="width:40%"></div></div>
+        </div>
+        <div class="stat" data-k="prestigio">
+          <div class="icono">👑</div>
+          <div class="nombre">Prestigio</div>
+          <div class="barra"><div id="barra-prestigio" style="width:40%"></div></div>
+        </div>
+      </div>
+
+      <div class="estado-progreso" id="estado-progreso"></div>
+      <h2 class="paso-titulo" id="paso-titulo"></h2>
+      <div class="paso-desc" id="paso-desc"></div>
+      <div class="opciones-decision" id="opciones-decision"></div>
+    </div>
+
+    <div id="final">
+      <div class="medalla" id="final-medalla"></div>
+      <h2 id="final-titulo"></h2>
+      <div class="narrativa" id="final-narrativa"></div>
+      <button id="reiniciar">Construir otra ciudadela</button>
+    </div>
+  </main>
+</div>
+
+<script>
+const pasos = [
+  {
+    titulo: "Elige la ubicación",
+    desc: "Antes de construir, debes decidir en qué región de los Andes se levantará tu ciudadela. Cada lugar ofrece ventajas y desafíos distintos.",
+    opciones: [
+      { t:"Valle costero junto a un río", d:"Tierra fértil para el cultivo, pero el desierto exige un manejo cuidadoso del agua.", efecto:{recursos:12, agua:-8} },
+      { t:"Meseta en la sierra alta", d:"Terreno elevado y de fácil defensa natural, con agua de deshielos cercana.", efecto:{defensa:12, agua:6} },
+      { t:"Claro en la ceja de selva", d:"Vegetación y madera en abundancia, aunque el terreno denso dificulta las defensas.", efecto:{recursos:16, defensa:-10} }
+    ]
+  },
+  {
+    titulo: "Elige el material principal",
+    desc: "El material que elijas para tus construcciones definirá la solidez, el tiempo de obra y el prestigio de tu ciudadela.",
+    opciones: [
+      { t:"Adobe (barro secado al sol)", d:"Rápido y accesible, ideal para grandes murallas como las de Chan Chan.", efecto:{recursos:6, prestigio:6, defensa:6} },
+      { t:"Piedra labrada (sillería)", d:"Extremadamente resistente y prestigiosa, pero exige mucho tiempo y esfuerzo de las canteras.", efecto:{defensa:20, prestigio:16, recursos:-14} },
+      { t:"Quincha (caña y barro entretejidos)", d:"Ligera y flexible ante los movimientos sísmicos, aunque menos duradera con el tiempo.", efecto:{recursos:16, defensa:-4, prestigio:-4} }
+    ]
+  },
+  {
+    titulo: "Organiza el manejo del agua",
+    desc: "El agua es un recurso vital. Decide cómo la llevarás hasta tu ciudadela y sus campos de cultivo.",
+    opciones: [
+      { t:"Canales de irrigación", d:"Desvías agua de un río cercano para regar grandes extensiones de tierra fértil.", efecto:{agua:20, recursos:14} },
+      { t:"Pozos y reservorios", d:"Almacenas agua de manantiales para asegurar el abastecimiento incluso en sequía.", efecto:{agua:16, recursos:4} },
+      { t:"Terrazas o andenes de captación", d:"Escalonas las laderas para aprovechar la lluvia y frenar la erosión del suelo.", efecto:{agua:10, recursos:18, defensa:4} }
+    ]
+  },
+  {
+    titulo: "Diseña tu sistema defensivo",
+    desc: "Todo asentamiento importante debe protegerse. ¿Cómo priorizas la seguridad de tu ciudadela?",
+    opciones: [
+      { t:"Murallas altas y gruesas", d:"Rodeas la ciudadela con murallas imponentes, aunque consumen buena parte de tus recursos.", efecto:{defensa:20, recursos:-10} },
+      { t:"Fosos y accesos estrechos", d:"Diseñas entradas laberínticas y difíciles de franquear para cualquier invasor.", efecto:{defensa:15, prestigio:6} },
+      { t:"Priorizar el comercio, sin grandes murallas", d:"Apuestas por alianzas y el intercambio antes que por la fortificación.", efecto:{defensa:-10, prestigio:20, recursos:14} }
+    ]
+  },
+  {
+    titulo: "Organiza el interior",
+    desc: "Por último, decide cómo distribuir el espacio dentro de tu ciudadela.",
+    opciones: [
+      { t:"Plazas ceremoniales y templos centrales", d:"Colocas el culto y las ceremonias en el corazón de tu ciudadela.", efecto:{prestigio:20, recursos:-4} },
+      { t:"Barrios especializados de artesanos", d:"Organizas talleres de textilería, cerámica y orfebrería por sectores.", efecto:{recursos:14, prestigio:10} },
+      { t:"Caminos y colcas (depósitos de almacenamiento)", d:"Priorizas la logística: rutas y grandes almacenes para épocas difíciles.", efecto:{recursos:20, defensa:6} }
+    ]
+  }
+];
+
+let stats = { agua:40, recursos:40, defensa:40, prestigio:40 };
+let pasoActual = 0;
+let ubicacionElegida = "";
+
+const juegoDiv = document.getElementById('juego');
+const finalDiv = document.getElementById('final');
+const estadoProgreso = document.getElementById('estado-progreso');
+const pasoTitulo = document.getElementById('paso-titulo');
+const pasoDesc = document.getElementById('paso-desc');
+const opcionesDiv = document.getElementById('opciones-decision');
+
+function clamp(v){ return Math.max(0, Math.min(100, v)); }
+
+function actualizarBarras(){
+  document.getElementById('barra-agua').style.width = stats.agua+'%';
+  document.getElementById('barra-recursos').style.width = stats.recursos+'%';
+  document.getElementById('barra-defensa').style.width = stats.defensa+'%';
+  document.getElementById('barra-prestigio').style.width = stats.prestigio+'%';
+}
+
+function mostrarPaso(){
+  const p = pasos[pasoActual];
+  estadoProgreso.textContent = `Decisión ${pasoActual+1} de ${pasos.length}`;
+  pasoTitulo.textContent = p.titulo;
+  pasoDesc.textContent = p.desc;
+
+  opcionesDiv.innerHTML='';
+  p.opciones.forEach(op=>{
+    const b = document.createElement('button');
+    b.className='opcion-decision';
+    b.innerHTML = `<div class="titulo-op">${op.t}</div><div class="desc-op">${op.d}</div>`;
+    b.addEventListener('click', ()=> elegir(op));
+    opcionesDiv.appendChild(b);
+  });
+}
+
+function elegir(op){
+  if(pasoActual === 0) ubicacionElegida = op.t;
+  Object.keys(op.efecto).forEach(k=>{
+    stats[k] = clamp(stats[k] + op.efecto[k]);
+  });
+  actualizarBarras();
+  pasoActual++;
+  if(pasoActual < pasos.length){
+    setTimeout(mostrarPaso, 200);
+  } else {
+    setTimeout(mostrarFinal, 400);
+  }
+}
+
+function mostrarFinal(){
+  juegoDiv.style.display='none';
+  finalDiv.style.display='block';
+
+  const promedio = (stats.agua + stats.recursos + stats.defensa + stats.prestigio) / 4;
+  let medalla, titulo;
+  if(promedio >= 75){ medalla='🏛️'; titulo='¡Una ciudadela legendaria!'; }
+  else if(promedio >= 58){ medalla='🏺'; titulo='Una ciudadela próspera'; }
+  else { medalla='🪨'; titulo='Una ciudadela modesta, pero en pie'; }
+
+  const destacada = Object.entries(stats).sort((a,b)=>b[1]-a[1])[0][0];
+  const nombresStat = {agua:"el manejo del agua", recursos:"la producción de recursos", defensa:"sus defensas", prestigio:"su prestigio"};
+
+  document.getElementById('final-medalla').textContent = medalla;
+  document.getElementById('final-titulo').textContent = titulo;
+  document.getElementById('final-narrativa').textContent =
+    `Elegiste levantar tu ciudadela en un ${ubicacionElegida.toLowerCase()}. Con el paso del tiempo, se convirtió en un lugar reconocido sobre todo por ${nombresStat[destacada]}. `+
+    `Estadísticas finales — Agua: ${stats.agua}, Recursos: ${stats.recursos}, Defensa: ${stats.defensa}, Prestigio: ${stats.prestigio}.`;
+}
+
+document.getElementById('reiniciar').addEventListener('click', ()=>{
+  stats = { agua:40, recursos:40, defensa:40, prestigio:40 };
+  pasoActual = 0;
+  ubicacionElegida = "";
+  actualizarBarras();
+  juegoDiv.style.display='block';
+  finalDiv.style.display='none';
+  mostrarPaso();
+});
+
+// inicio
+actualizarBarras();
+mostrarPaso();
+</script>
+
+</body>
+</html>
